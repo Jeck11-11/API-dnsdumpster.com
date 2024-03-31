@@ -1,0 +1,33 @@
+from flask import Flask, request, jsonify
+from dnsdumpster.DNSDumpsterAPI import DNSDumpsterAPI
+
+app = Flask(__name__)
+
+def decode_bytes(value):
+    """Recursively decode bytes to string in the given value."""
+    if isinstance(value, bytes):
+        return value.decode('utf-8')
+    elif isinstance(value, dict):
+        return {k: decode_bytes(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [decode_bytes(v) for v in value]
+    return value
+
+@app.route('/dnslookup', methods=['POST'])
+def dns_lookup():
+    data = request.json
+    if not data or 'domain' not in data:
+        return jsonify({'error': 'Please provide a domain name'}), 400
+
+    domain = data['domain']
+    try:
+        results = DNSDumpsterAPI().search(domain)
+        # Decode bytes objects within results
+        results_decoded = decode_bytes(results)
+        return jsonify(results_decoded)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
