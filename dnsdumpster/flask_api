@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from dnsdumpster.DNSDumpsterAPI import DNSDumpsterAPI
+from DNSDumpsterAPI import DNSDumpsterAPI
 
 app = Flask(__name__)
 
